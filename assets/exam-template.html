@@ -244,7 +244,8 @@ body {
 }
 
 /* 父容器清除浮动 */
-.q-body::after {
+.q-body::after,
+.solve-area::after {
   content: "";
   display: table;
   clear: both;
@@ -509,6 +510,41 @@ body {
     </div>
   </div>
 
+  <!-- 示例：填空题（文绕图配图，无图注） -->
+  <div class="question">
+    <div class="q-row">
+      <span class="q-no">5.</span>
+      <div class="q-body">
+        <div class="q-image q-image-float-right">
+          <img src="images/cylinder.png" alt="圆柱体">
+        </div>
+        如右图所示的圆柱体，底面半径为2cm，高为5cm，则体积为 <span class="blank-inline" style="min-width:80px;"></span> cm³。（π取3.14）
+      </div>
+      <span class="q-score">（P分）</span>
+    </div>
+  </div>
+
+  <!-- 示例：填空题（多图并排配图） -->
+  <div class="question">
+    <div class="q-row">
+      <span class="q-no">6.</span>
+      <div class="q-body">
+        下列两个几何体中，体积较大的是 <span class="blank-inline" style="min-width:60px;"></span>（填"甲"或"乙"）。
+        <div class="q-image-group">
+          <div class="q-image q-image-block q-image-border">
+            <img src="images/fig-a.png" alt="甲">
+            <div class="q-image-caption">甲</div>
+          </div>
+          <div class="q-image q-image-block q-image-border">
+            <img src="images/fig-b.png" alt="乙">
+            <div class="q-image-caption">乙</div>
+          </div>
+        </div>
+      </div>
+      <span class="q-score">（P分）</span>
+    </div>
+  </div>
+
 
   <!-- ============================================================
        大题三：解答题
@@ -551,6 +587,31 @@ body {
     <div class="solve-area">
       <span class="solve-line"></span>
       <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+      <span class="solve-line"></span>
+    </div>
+  </div>
+
+  <!-- 示例：解答题（作答区辅助图） -->
+  <div class="question">
+    <div class="q-row">
+      <span class="q-no">7.</span>
+      <div class="q-body">
+        已知二次函数 $y = x^2 - 2x - 3$，请在下方坐标系中画出函数图像，并求出顶点坐标。
+      </div>
+      <span class="q-score">（Q分）</span>
+    </div>
+    <div class="solve-area">
+      <div class="q-image q-image-float-left q-image-border" style="max-width: 45%;">
+        <img src="images/coordinate-blank.png" alt="空白坐标系">
+        <div class="q-image-caption">答题辅助坐标系</div>
+      </div>
       <span class="solve-line"></span>
       <span class="solve-line"></span>
       <span class="solve-line"></span>
