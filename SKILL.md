@@ -69,7 +69,7 @@ Never invent or alter question content. Only generate structural/metadata fields
 2. Identify sections, question types, and image positions — follow the user's structure exactly; preserve image order and placement as given.
 3. Copy `assets/exam-template.html` and `assets/katex/` to `/workspace/<name>-exam.html` and `/workspace/katex/`. When images are present, create `/workspace/images/` folder and move all image resources there.
 4. Fill in the HTML following the rules below, using relative paths `images/filename.ext` for all images.
-5. Present only the HTML file with `present_files`.
+5. Present the HTML file and the images folder with `present_files`.
 6. Remind the user:
    - `katex/` folder must be alongside the HTML file for formulas to render
    - `images/` folder (if present) must be alongside the HTML file for images to display
