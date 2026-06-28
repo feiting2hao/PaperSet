@@ -38,6 +38,9 @@ Users typically upload a **Markdown or DOCX file** containing the exam questions
 - The question numbering as given
 - Section groupings and their order
 - All formulas, symbols, and notation (convert to KaTeX if not already)
+- Image positions, order, and captions — preserve exactly as provided
+- Do not replace, crop, or modify any user-provided images
+- Caption text must be used verbatim; do not auto-number or fabricate captions
 
 **For missing information — generate sensibly or use defaults:**
 
@@ -49,6 +52,10 @@ Users typically upload a **Markdown or DOCX file** containing the exam questions
 | Section score summary in section-title | Compute if per-question score is known; else use `共__分` |
 | Info-bar fields | Keep default: 班级 / 姓名 / 学号 / 得分 |
 | Footer text | Use default: `— 试卷结束，请检查作答 —` |
+| Image caption | Omit `.q-image-caption` element entirely — do not render, do not occupy space |
+| Image file missing (but referenced) | Insert placeholder `<div class="q-image-placeholder">[ 请插入配图 ]</div>` |
+| Layout mode unspecified | Default to block-centered (`.q-image-block`) |
+| Option image size unspecified | Default to 80px max-height |
 
 Never invent or alter question content. Only generate structural/metadata fields.
 
@@ -56,12 +63,16 @@ Never invent or alter question content. Only generate structural/metadata fields
 
 ## Workflow
 
-1. Read the uploaded file (Markdown or DOCX) to extract all questions.
-2. Identify sections and question types — follow the user's structure exactly; do not force the three-section default.
-3. Copy `assets/exam-template.html` and `assets/katex/` to `/workspace/<name>-exam.html` and `workspace/katex/`.
-4. Fill in the HTML following the rules below.
+1. Read the uploaded file (Markdown or DOCX) to extract all questions, images, and captions.
+   - **Markdown**: Parse `![caption](image-path)` syntax to extract image paths and corresponding captions
+   - **DOCX**: Extract embedded images and corresponding caption text, match positions by question order
+2. Identify sections, question types, and image positions — follow the user's structure exactly; preserve image order and placement as given.
+3. Copy `assets/exam-template.html` and `assets/katex/` to `/workspace/<name>-exam.html` and `/workspace/katex/`. When images are present, create `/workspace/images/` folder and move all image resources there.
+4. Fill in the HTML following the rules below, using relative paths `images/filename.ext` for all images.
 5. Present only the HTML file with `present_files`.
-6. Remind the user to place the `katex/` folder alongside the HTML file.
+6. Remind the user:
+   - `katex/` folder must be alongside the HTML file for formulas to render
+   - `images/` folder (if present) must be alongside the HTML file for images to display
 
 ---
 
@@ -191,6 +202,90 @@ Place **outside** `.q-row` but inside `.question`. Each `<span>` is one dashed l
 | 6–8 分  | 8–10 行 |
 | 10–12 分 | 12–15 行 |
 | 15 分以上 | 16–20 行 |
+
+---
+
+### Element E — Question Images
+
+Images are placed within `.q-body` (for stem images), inside `.opt` (for option images), or inside `.solve-area` (for answer-area images).
+
+**Layout Mode 1 — Block Centered (default):**
+```html
+<div class="q-image q-image-block">
+  <img src="images/geometry-1.png" alt="Triangle ABC diagram">
+  <div class="q-image-caption">图1 三角形ABC示意图</div>
+</div>
+```
+- Standalone block, horizontally centered
+- Max-width: 80% of content area
+- Margin: 12px top/bottom
+- Use for main diagrams like geometry figures, experimental setups
+
+**Layout Mode 2 — Float Left/Right (text wrap):**
+```html
+<div class="q-image q-image-float-right">
+  <img src="images/device.png" alt="Experimental apparatus">
+</div>
+如右图所示的实验装置中...
+```
+- `q-image-float-left` or `q-image-float-right`
+- Max-width: 35% of content area
+- Text wraps around the image
+- Use for small diagrams referenced in text like "如图所示..."
+
+**Layout Mode 3 — Multiple Images Side by Side:**
+```html
+<div class="q-image-group">
+  <div class="q-image q-image-block">
+    <img src="images/fig-a.png" alt="Figure A">
+    <div class="q-image-caption">图A</div>
+  </div>
+  <div class="q-image q-image-block">
+    <img src="images/fig-b.png" alt="Figure B">
+    <div class="q-image-caption">图B</div>
+  </div>
+</div>
+```
+- Images arranged horizontally with 16px gap
+- Each image can have its own caption
+- Use for comparison figures, experimental groups
+
+**Option Images (inside `.opt`):**
+```html
+<div class="opt">
+  <span class="opt-key">A.</span>
+  <span><div class="q-image"><img src="images/fig-a.png" alt="Option A"></div></span>
+</div>
+```
+- Max-height: 80px, auto width
+- Captions hidden by default
+- Compatible with both `.options` (2-column) and `.options-single` (1-column)
+
+**Answer Area Images (inside `.solve-area`):**
+```html
+<div class="solve-area">
+  <div class="q-image q-image-float-left q-image-border" style="max-width: 45%;">
+    <img src="images/coordinate-blank.png" alt="Blank coordinate system">
+    <div class="q-image-caption">答题辅助坐标系</div>
+  </div>
+  <span class="solve-line"></span>
+  <span class="solve-line"></span>
+</div>
+```
+- Place images above answer lines
+- Recommended: `q-image-float-left` at 40-50% max-width
+
+**Optional Styles:**
+- `.q-image-border` — adds 1px light gray border (for charts, diagrams)
+- `.q-image-bg` — adds white background (for transparent PNGs to prevent print issues)
+- Combine: `class="q-image q-image-block q-image-border q-image-bg"`
+
+**Image Placeholder (when file is missing):**
+```html
+<div class="q-image q-image-block">
+  <div class="q-image-placeholder">[ 请插入配图 ]</div>
+</div>
+```
 
 ---
 
@@ -363,6 +458,108 @@ Customize the text as needed.
       <div class="blank-area"></div>
     </div>
     <span class="q-score">（X分）</span>
+  </div>
+</div>
+```
+
+### Multiple-choice with stem image (block centered)
+```html
+<div class="question">
+  <div class="q-row">
+    <span class="q-no">N.</span>
+    <div class="q-body">
+      STEM with reference to image below（&ensp;&ensp;）。
+      <div class="q-image q-image-block q-image-border">
+        <img src="images/xxx.png" alt="Image description">
+        <div class="q-image-caption">图注文字</div>
+      </div>
+      <div class="options">
+        <div class="opt"><span class="opt-key">A.</span><span>OPT_A</span></div>
+        <div class="opt"><span class="opt-key">B.</span><span>OPT_B</span></div>
+        <div class="opt"><span class="opt-key">C.</span><span>OPT_C</span></div>
+        <div class="opt"><span class="opt-key">D.</span><span>OPT_D</span></div>
+      </div>
+    </div>
+    <span class="q-score">（X分）</span>
+  </div>
+</div>
+```
+
+### Multiple-choice with image options
+```html
+<div class="question">
+  <div class="q-row">
+    <span class="q-no">N.</span>
+    <div class="q-body">
+      STEM（&ensp;&ensp;）。
+      <div class="options">
+        <div class="opt"><span class="opt-key">A.</span><span><div class="q-image"><img src="images/fig-a.png" alt="图A"></div></span></div>
+        <div class="opt"><span class="opt-key">B.</span><span><div class="q-image"><img src="images/fig-b.png" alt="图B"></div></span></div>
+        <div class="opt"><span class="opt-key">C.</span><span><div class="q-image"><img src="images/fig-c.png" alt="图C"></div></span></div>
+        <div class="opt"><span class="opt-key">D.</span><span><div class="q-image"><img src="images/fig-d.png" alt="图D"></div></span></div>
+      </div>
+    </div>
+    <span class="q-score">（X分）</span>
+  </div>
+</div>
+```
+
+### Fill-in-the-blank with float image
+```html
+<div class="question">
+  <div class="q-row">
+    <span class="q-no">N.</span>
+    <div class="q-body">
+      <div class="q-image q-image-float-right">
+        <img src="images/xxx.png" alt="Image">
+      </div>
+      STEM with answer blank <span class="blank-inline" style="min-width:80px;"></span>。
+    </div>
+    <span class="q-score">（X分）</span>
+  </div>
+</div>
+```
+
+### Fill-in-the-blank with multiple images
+```html
+<div class="question">
+  <div class="q-row">
+    <span class="q-no">N.</span>
+    <div class="q-body">
+      STEM <span class="blank-inline" style="min-width:60px;"></span>。
+      <div class="q-image-group">
+        <div class="q-image q-image-block q-image-border">
+          <img src="images/fig-a.png" alt="图A">
+          <div class="q-image-caption">图A</div>
+        </div>
+        <div class="q-image q-image-block q-image-border">
+          <img src="images/fig-b.png" alt="图B">
+          <div class="q-image-caption">图B</div>
+        </div>
+      </div>
+    </div>
+    <span class="q-score">（X分）</span>
+  </div>
+</div>
+```
+
+### Free-response with answer-area image
+```html
+<div class="question">
+  <div class="q-row">
+    <span class="q-no">N.</span>
+    <div class="q-body">STEM</div>
+    <span class="q-score">（X分）</span>
+  </div>
+  <div class="solve-area">
+    <div class="q-image q-image-float-left q-image-border" style="max-width: 45%;">
+      <img src="images/coordinate-blank.png" alt="Blank coordinate">
+      <div class="q-image-caption">答题辅助坐标系</div>
+    </div>
+    <span class="solve-line"></span><span class="solve-line"></span>
+    <span class="solve-line"></span><span class="solve-line"></span>
+    <span class="solve-line"></span><span class="solve-line"></span>
+    <span class="solve-line"></span><span class="solve-line"></span>
   </div>
 </div>
 ```
